@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manufacturing Production Planning System</title>
+<style>
+:root{--bg:#0f161c;--card:#17212a;--ink:#e6edf2;--mut:#8fa1ad;--line:#2a3a46;--side:#121b22;--acc:#f2b705;--ok:#4cc38a;--bad:#ff6b5b;--warn:#f0a94a;--blue:#5aa9e6;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font-family:Bahnschrift,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--side);color:#fff;padding:10px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+header h1{font-size:16px;margin:0 auto 0 0}
+header span{font-size:13px;color:#cfd8dd}
+nav{display:flex;gap:2px;background:#26373f;padding:0 12px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:#cfd8dd;padding:10px 14px;font:inherit;cursor:pointer}
+nav button.on{border-bottom-color:var(--acc);color:#fff}
+main{padding:20px;max-width:1100px;margin:auto}
+h2{margin:0 0 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.card,.box{background:var(--card);border:1px solid var(--line);padding:14px}
+.card b{display:block;font-size:28px}.card span,.note{color:var(--mut);font-size:13px}
+.box{margin-bottom:16px;overflow-x:auto}.box h3{margin:0 0 10px;font-size:16px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--mut);font-size:13px}
+.tag{padding:2px 8px;font-size:12px;border:1px solid currentColor}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.info{color:var(--blue)}
+.bar{display:inline-block;width:100px;height:8px;background:#d5dadd;margin-right:6px}.bar i{display:block;height:100%;background:var(--blue)}
+form{display:flex;flex-wrap:wrap;gap:10px;align-items:end}label{font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+input,select{font:inherit;padding:7px 8px;border:1px solid var(--line);background:#fff}
+.go{font:inherit;background:var(--acc);border:0;padding:8px 14px;font-weight:600;cursor:pointer;color:var(--ink)}
+.go.sm{padding:3px 9px;font-size:12px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.g{display:flex;align-items:center;margin-bottom:6px}.g>span{width:120px;font-size:13px;flex-shrink:0}
+.lane{position:relative;flex:1;height:28px;background:#eef0f2;border:1px solid var(--line)}
+.lane i{position:absolute;top:0;bottom:0;border-left:1px solid #d3d8db}
+.lane em{position:absolute;top:4px;height:18px;color:#fff;font-size:11px;font-style:normal;padding:2px 4px;overflow:hidden;white-space:nowrap}
+.lane u{position:absolute;top:-3px;bottom:-3px;border-left:2px solid var(--bad)}
+header{border-bottom:1px solid var(--line)}header span{color:var(--mut)}
+nav{background:var(--side);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{color:var(--mut)}nav button:hover{color:var(--ink)}nav button.on{color:var(--acc)}
+.card,.box{box-shadow:0 1px 0 #0006}.card[onclick]{cursor:pointer}.card[onclick]:hover{border-color:var(--acc)}
+input,select{background:#0e151b;color:var(--ink)}.go{color:#1b1300}.go.ghost{background:#2a3a46;color:var(--ink)}
+.bar{background:#2a3a46}.lane{background:#101820}.lane i{border-left-color:#202e38}.lane em{cursor:pointer}
+tr.click{cursor:pointer}tr.click:hover{background:#1d2a34}
+#toast{background:#22313c;color:#fff;border-left:4px solid var(--acc)}
+.help{background:#14202a;border:1px solid var(--line);border-left:4px solid var(--blue);padding:10px 14px;margin-bottom:16px}
+.help summary{cursor:pointer;font-weight:600}.help p{margin:8px 0 0;color:var(--mut);line-height:1.5}
+.fb{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{font:inherit;font-size:13px;background:none;border:1px solid var(--line);color:var(--mut);padding:4px 12px;cursor:pointer;border-radius:14px}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#1b1300}
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:20px;max-width:min(560px,92vw)}dialog::backdrop{background:#000a}
+#botBtn{position:fixed;right:18px;bottom:18px;z-index:20;border-radius:22px;box-shadow:0 4px 14px #0008}
+#bot{position:fixed;right:18px;bottom:70px;width:min(360px,94vw);height:min(480px,70vh);background:var(--card);border:1px solid var(--line);z-index:21;display:flex;flex-direction:column;box-shadow:0 8px 28px #000a}
+.bh{display:flex;justify-content:space-between;padding:10px 14px;background:var(--side);border-bottom:1px solid var(--line)}.bh button{background:none;border:0;color:var(--ink);cursor:pointer;font-size:16px}
+#msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:88%;padding:8px 11px;font-size:14px;line-height:1.45;white-space:pre-wrap}.m.bot{background:#22313c;align-self:flex-start}.m.me{background:var(--blue);color:#06121a;align-self:flex-end}
+#chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px}
+#bot form{padding:10px;border-top:1px solid var(--line);flex-wrap:nowrap}#bot form input{flex:1;min-width:0}
+#login{max-width:340px;margin:12vh auto;background:var(--card);border:1px solid var(--line);padding:24px}
+#login form{flex-direction:column;align-items:stretch}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px}
+</style>
+</head>
+<body>
+<div id="login" hidden>
+ <h2>Sign in</h2>
+ <form onsubmit="signIn(event)"><label>Username<input id="u" autocomplete="username"></label>
+ <label>Password<input id="p" type="password" autocomplete="current-password"></label>
+ <button class="go">Sign in</button></form>
+ <p class="note">Demo: planner / plan123 (full access), supervisor / sup123 (progress and viewing).</p>
+</div>
+<div id="app" hidden>
+ <header><h1>Production Planning System</h1><span id="who"></span><span id="clk"></span>
+  <button class="go sm" onclick="tick(1)">+1 hr</button><button class="go sm" onclick="tick(8)">+1 day</button>
+  <button class="go sm" id="play" onclick="play()">Play</button><button class="go sm" onclick="botToggle()">Ask assistant</button><button class="go sm" onclick="signOut()">Sign out</button></header>
+ <nav id="nav"></nav><main id="main"></main>
+ <dialog id="dlg"></dialog>
+ <button id="botBtn" class="go" onclick="botToggle()" title="Press ? anytime">Ask assistant</button>
+ <section id="bot" hidden aria-label="Assistant"><div class="bh"><b>Assistant</b><button onclick="botToggle()" aria-label="Close assistant">&times;</button></div>
+  <div id="msgs" aria-live="polite"></div>
+  <div id="chips"><button class="chip" onclick="explain()">Explain this page</button><button class="chip" onclick="ask('How do I create an order?')">Create an order</button>
+   <button class="chip" onclick="ask('What is delayed right now?')">What is delayed?</button><button class="chip" onclick="ask('What does idle mean?')">What is idle?</button>
+   <button class="chip" onclick="ask('What can a supervisor do?')">Roles</button></div>
+  <form onsubmit="event.preventDefault();ask()"><input id="bq" placeholder="Ask about any feature..." maxlength="500" autocomplete="off"><button class="go">Send</button></form></section>
+</div>
+<div id="toast" hidden></div>
+<script>
+const DAY=8,$=s=>document.querySelector(s);
+const tm=h=>'Day '+(Math.floor(h/DAY)+1)+', '+(9+h%DAY)+':00';
+const sc={Completed:'ok','In progress':'info',Scheduled:'info',Delayed:'bad',OK:'ok',Shortage:'bad',Reorder:'warn'};
+const tag=t=>`<span class="tag ${sc[t]||'info'}">${t}</span>`;
+const bar=p=>`<span class="bar"><i style="width:${p}%"></i></span>${p}%`;
+let S=null,U=null,csrf='',page='dashboard',timer=0,FQ='',FS='All';const closed=new Set();
+const TABS={Planner:['dashboard','orders','schedule','materials','progress','reports','account'],Supervisor:['dashboard','schedule','materials','progress','account']};
+
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(t.h);t.h=setTimeout(()=>t.hidden=true,3500)}
+async function api(path,body,method){
+  method=method||(body===undefined?'GET':'POST');
+  const r=await fetch('/api/'+path,method==='GET'?{}:{method,headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(body||{})});
+  const d=await r.json().catch(()=>({}));
+  if(path==='state'&&(r.status===401||r.status===403)){S=null;return render()}
+  if(!r.ok){toast(d.error||'Something went wrong.');return null}
+  return d;
+}
+async function load(){const d=await api('state');if(d){S=d;csrf=d.csrf;if(d.role==='Planner')U=await api('users');render()}}
+async function act(path,body,msg,method){const d=await api(path,body||{},method);if(d){if(msg)toast(msg(d));await load()}}
+async function signIn(e){e.preventDefault();if(await api('login',{username:$('#u').value,password:$('#p').value}))load()}
+async function signOut(){clearInterval(timer);timer=0;await api('logout',{});S=null;render()}
+const tick=h=>act('tick',{hours:h});
+function play(){if(timer){clearInterval(timer);timer=0}else timer=setInterval(()=>{if(!document.activeElement.matches('input,select'))tick(1)},1000);$('#play').textContent=timer?'Pause':'Play'}
+
+const need=()=>{const n={};S.materials.forEach(m=>n[m.material_id]=m);return n};
+const ordersTable=()=>`${filterBar()}<table><tr><th>Order</th><th>Product</th><th>Qty</th><th>Due</th><th>Priority</th><th>Planned finish</th><th>Progress</th><th>Status</th>${A()?'<th></th>':''}</tr>
+ ${S.orders.map(o=>`<tr class="click" data-s="${(o.code+' '+o.product+' '+o.status).toLowerCase()}" onclick="openOrder(${o.order_id},event)"><td>${o.code}</td><td>${o.product}</td><td>${o.qty}</td><td>Day ${o.due_day}</td><td>${o.priority}</td><td>${tm(o.end_h)}</td><td>${bar(o.pct)}</td><td>${tag(o.status)}</td>${A()?`<td><button class="go sm" onclick="editOrder(${o.order_id})">Edit</button> <button class="go sm" onclick="cancelOrder(${o.order_id})">Cancel</button></td>`:''}</tr>`).join('')}</table>`;
+const PAGES={
+dashboard(){
+  const late=S.orders.filter(o=>o.status==='Delayed').length,short=S.materials.filter(m=>m.status==='Shortage').length,idle=S.machines.filter(m=>!m.down&&!m.running).length;
+  const al=[...S.orders.filter(o=>o.status==='Delayed').map(o=>['bad',o.code+' will finish late ('+tm(o.end_h)+')']),
+   ...S.materials.filter(m=>m.status!=='OK').map(m=>[m.status==='Shortage'?'bad':'warn',m.status+': '+m.name+' (need '+m.need+', have '+m.stock+')']),
+   ...S.machines.filter(m=>m.down).map(m=>['warn',m.name+' is offline'])];
+  return `<h2>Dashboard</h2><div class="cards"><div class="card"><b>${S.orders.length}</b><span>Orders</span></div>
+  <div class="card" onclick="go('orders','Delayed')" title="Show delayed orders"><b class="${late?'bad':''}">${late}</b><span>Delayed</span></div><div class="card" onclick="go('schedule')" title="Open schedule"><b>${idle}</b><span>Idle machines</span></div>
+  <div class="card" onclick="go('materials')" title="Open materials"><b class="${short?'bad':''}">${short}</b><span>Materials short</span></div></div>
+  <div class="box"><h3>Orders</h3>${ordersTable()}</div><div class="box"><h3>Machine timeline</h3>${gantt()}</div>
+  <div class="box"><h3>Alerts</h3>${al.map(a=>`<p class="${a[0]}" style="margin:4px 0">${a[1]}</p>`).join('')||'No alerts.'}</div>
+  <div class="box"><h3>Activity</h3>${S.activity.map(a=>`<p class="note" style="margin:3px 0">${tm(a.at_h)}: ${a.msg}</p>`).join('')||'<p class="note">Nothing yet.</p>'}</div>`},
+orders(){return `<h2>Production orders</h2><div class="box"><form onsubmit="newOrder(event)">
+  <label>Product<select id="fp">${S.products.map(p=>`<option value="${p.product_id}">${p.name}</option>`).join('')}</select></label>
+  <label>Quantity<input id="fq" type="number" min="1" max="10000" value="30" required></label>
+  <label>Due in (days)<input id="fd" type="number" min="1" value="8" required></label>
+  <label>Priority<select id="fr"><option>High</option><option selected>Medium</option><option>Low</option></select></label>
+  <button class="go">Create order</button></form></div><div class="box">${ordersTable()}</div>`},
+schedule(){
+  const pl=S.role==='Planner';
+  return `<h2>Schedule and machines</h2><div class="box"><h3>Machine timeline</h3>${gantt()}</div><div class="box"><h3>Stage schedule</h3><table><tr><th>Order</th><th>Stage</th><th>Start</th><th>End</th><th>Machine</th><th>Worker</th><th>Done</th></tr>
+  ${S.schedule.map(r=>`<tr><td>${r.code}</td><td>${r.stage}</td><td>${tm(r.start_h)}</td><td>${tm(r.end_h)}</td><td>${pl?`<select onchange="act('schedule/${r.schedule_id}/machine',{machine_id:+this.value})">${S.machines.filter(m=>m.stage_id===r.stage_id).map(m=>`<option value="${m.machine_id}" ${m.machine_id===r.machine_id?'selected':''}>${m.name}</option>`).join('')}</select>`:r.machine}</td><td>${r.worker}</td><td>${r.done}/${r.qty}</td></tr>`).join('')}</table></div>
+  <div class="box"><h3>Machines</h3><table><tr><th>Machine</th><th>Stage</th><th>State</th><th></th></tr>
+  ${S.machines.map(m=>`<tr><td>${m.name}</td><td>${m.stage}</td><td>${m.down?tag('Shortage').replace('Shortage','Offline'):m.running?'<span class="tag ok">Running</span>':'<span class="tag warn">Idle</span>'}</td>
+  <td>${pl?`<button class="go sm" onclick="act('machines/${m.machine_id}/toggle',{},d=>d.moved?d.moved+' task(s) moved to another machine.':'Machine updated.')">${m.down?'Bring online':'Report breakdown'}</button>`:''}</td></tr>`).join('')}</table></div>`},
+materials(){return `<h2>Materials</h2><div class="box"><table><tr><th>Material</th><th>In stock</th><th>Needed</th><th>Status</th><th></th></tr>
+  ${S.materials.map(m=>`<tr><td>${m.name} (${m.unit})</td><td>${m.stock}</td><td>${m.need}</td><td>${tag(m.status)}</td><td>${S.role==='Planner'?`<button class="go sm" onclick="act('materials/${m.material_id}/restock',{qty:100})">Add 100</button>`:''}</td></tr>`).join('')}</table></div>`},
+progress(){
+  const open=S.schedule.filter(r=>r.done<r.qty);
+  return `<h2>Production progress</h2><div class="box"><form onsubmit="logProg(event)">
+  <label>Order and stage<select id="ls">${open.map(r=>`<option value="${r.schedule_id}">${r.code} · ${r.stage} (${r.done}/${r.qty})</option>`).join('')}</select></label>
+  <label>Units completed<input id="lq" type="number" min="1" value="5" required></label><button class="go">Log progress</button></form></div>
+  ${S.orders.map(o=>`<div class="box"><h3>${o.code} · ${o.product} ${tag(o.status)}</h3><table><tr><th>Stage</th><th>Done</th><th>Progress</th></tr>
+  ${S.schedule.filter(r=>r.order_id===o.order_id).map(r=>`<tr><td>${r.stage}</td><td>${r.done}/${r.qty}</td><td>${bar(Math.round(r.done/r.qty*100))}</td></tr>`).join('')}</table></div>`).join('')}`},
+reports(){const ok=Math.round(S.orders.filter(o=>o.status!=='Delayed').length/S.orders.length*100);
+  return `<h2>Reports</h2><div class="cards"><div class="card"><b>${ok}%</b><span>Orders on time</span></div>
+  <div class="card"><b>${S.orders.reduce((a,o)=>a+o.qty,0)}</b><span>Units planned</span></div></div>
+  <div class="box"><a class="go" href="/api/export/orders.csv" style="text-decoration:none;display:inline-block">Download orders (CSV)</a>
+  <a class="go" href="/api/export/schedule.csv" style="text-decoration:none;display:inline-block">Download schedule (CSV)</a></div>`}};
+const A=()=>S.role==='Planner'&&page==='orders';
+function gantt(){const mx=Math.max(40,...S.schedule.map(r=>r.end_h))+4,col=['#2f5d7c','#b87a12','#4f8a62','#8a5a83','#a1473b'];
+ const t=Array.from({length:Math.ceil(mx/DAY)},(_,d)=>`<i style="left:${d*DAY/mx*100}%"></i>`).join('');
+ return S.machines.map(m=>`<div class="g"><span>${m.name}</span><div class="lane">${t}${S.schedule.filter(r=>r.machine_id===m.machine_id).map(r=>`<em onclick="openStage(${r.schedule_id})" title="${r.stage}: ${tm(r.start_h)} to ${tm(r.end_h)}" style="left:${r.start_h/mx*100}%;width:${(r.end_h-r.start_h)/mx*100}%;background:${col[r.order_id%5]}">${r.code}</em>`).join('')}<u style="left:${S.now/mx*100}%"></u></div></div>`).join('')}
+function editOrder(id){const o=S.orders.find(x=>x.order_id===id),d=prompt('New due day (number):',o.due_day);if(d===null)return;
+ const p=prompt('Priority (High, Medium or Low):',o.priority);if(p!==null)act('orders/'+id,{due_day:+d,priority:p},()=>'Order updated.','PUT')}
+const cancelOrder=id=>confirm('Cancel this order and remove its schedule?')&&act('orders/'+id,{},()=>'Order cancelled.','DELETE');
+const chPw=e=>{e.preventDefault();act('password',{old:$('#po').value,new:$('#pn').value},()=>'Password changed.')};
+const addUser=e=>{e.preventDefault();act('users',{username:$('#nu').value,password:$('#np').value,role:$('#nr').value},()=>'User added.')};
+PAGES.account=()=>`<h2>Account and security</h2><div class="box"><h3>Change password</h3><form onsubmit="chPw(event)">
+ <label>Current password<input id="po" type="password" autocomplete="current-password" required></label>
+ <label>New password (8+ characters, a letter and a digit)<input id="pn" type="password" autocomplete="new-password" required></label><button class="go">Change password</button></form>
+ <p class="note">API route list: <a href="/api/docs" target="_blank">/api/docs</a></p></div>`+(S.role==='Planner'&&U?`<div class="box"><h3>Users</h3>
+ <table><tr><th>Username</th><th>Role</th></tr>${U.users.map(u=>`<tr><td>${u.username}</td><td>${u.role}</td></tr>`).join('')}</table>
+ <form onsubmit="addUser(event)" style="margin-top:12px"><label>Username<input id="nu" required></label>
+ <label>Password<input id="np" type="password" autocomplete="new-password" required></label>
+ <label>Role<select id="nr"><option>Supervisor</option><option>Planner</option></select></label><button class="go">Add user</button></form></div>
+ <div class="box"><h3>Audit log (latest 25 actions)</h3><table><tr><th>Time</th><th>User</th><th>Action</th><th>IP</th></tr>
+ ${U.audit.map(a=>`<tr><td>${a.at}</td><td>${a.user}</td><td>${a.action}</td><td>${a.ip}</td></tr>`).join('')}</table></div>`:'');
+const HELP={dashboard:['Your factory at a glance','The cards count late orders, idle machines and short materials: click a card to jump to the details. Click any order row for its full story. On the timeline each coloured bar is a stage on a machine; the red line is the current time.'],
+orders:['Create and manage orders','Pick a product, quantity and due date and press Create order: the system plans every stage for you. Use the search box and status buttons to find orders. Click a row to see its stages.'],
+schedule:['Who does what, and when','Each row is one stage of one order. Change the machine with the dropdown (overlapping bookings are blocked). If a machine fails, press Report breakdown and its tasks move automatically.'],
+materials:['Do we have enough material?','Needed = what all open orders require together. Shortage means add stock, or the orders cannot finish.'],
+progress:['Record finished work','Choose an order and stage, enter how many units are done and press Log progress. Order progress updates at once.'],
+reports:['Summary and downloads','See the on-time rate and totals, and download orders or the schedule as CSV for Excel.'],
+account:['Your account','Change your password here. Planners can also add users and read the audit log of every change.']};
+const helpBox=()=>`<details class="help" ${closed.has(page)?'':'open'} ontoggle="this.open?closed.delete(page):closed.add(page)"><summary>What is this page? ${HELP[page][0]}</summary><p>${HELP[page][1]}</p></details>`;
+const go=(p,f)=>{page=p;if(f)FS=f;render()};
+const filterBar=()=>`<div class="fb"><input id="fq2" placeholder="Search orders" value="${FQ.replace(/"/g,'&quot;')}" oninput="flt()">${['All','In progress','Scheduled','Delayed','Completed'].map(f=>`<button class="chip" data-f="${f}" onclick="FS='${f}';flt()">${f}</button>`).join('')}</div>`;
+function flt(){const i=$('#fq2');if(!i)return;FQ=i.value;const q=FQ.toLowerCase();
+ document.querySelectorAll('tr.click').forEach(r=>r.hidden=!(r.dataset.s.includes(q)&&(FS==='All'||r.dataset.s.includes(FS.toLowerCase()))));
+ document.querySelectorAll('.chip[data-f]').forEach(c=>c.classList.toggle('on',c.dataset.f===FS))}
+function openOrder(id,e){if(e&&e.target.closest('button'))return;const o=S.orders.find(x=>x.order_id===id);
+ dlg.innerHTML=`<h3>${o.code} · ${o.product} (${o.qty} units) ${tag(o.status)}</h3><p class="note">Due Day ${o.due_day} · ${o.priority} priority · planned finish ${tm(o.end_h)} · ${o.pct}% complete</p>
+ <table><tr><th>Stage</th><th>Machine</th><th>Worker</th><th>Done</th></tr>${S.schedule.filter(r=>r.order_id===id).map(r=>`<tr><td>${r.stage}</td><td>${r.machine}</td><td>${r.worker}</td><td>${r.done}/${r.qty}</td></tr>`).join('')}</table>
+ <p style="margin-top:14px"><button class="go ghost" onclick="dlg.close()">Close</button></p>`;dlg.showModal()}
+function openStage(id){const r=S.schedule.find(x=>x.schedule_id===id),left=r.qty-r.done;
+ dlg.innerHTML=`<h3>${r.code} · ${r.stage}</h3><p>${r.machine} · ${r.worker}<br>${tm(r.start_h)} to ${tm(r.end_h)}<br>${r.done} of ${r.qty} units done</p>
+ ${left?`<button class="go" onclick="logQ(${id},Math.min(5,${left}))">+5 units</button> <button class="go" onclick="logQ(${id},${left})">Finish stage</button> `:'<p class="ok">This stage is complete.</p>'}<button class="go ghost" onclick="dlg.close()">Close</button>`;dlg.showModal()}
+const logQ=(id,n)=>{dlg.close();act('progress',{schedule_id:id,qty:n},()=>'Progress logged.')};
+function say(who,t){const d=document.createElement('div');d.className='m '+who;d.textContent=t;$('#msgs').append(d);$('#msgs').scrollTop=1e9;return d}
+function botToggle(){const p=$('#bot');p.hidden=!p.hidden;if(!p.hidden){if(!$('#msgs').children.length)say('bot','Hi! I can explain any feature and tell you what is happening in the plant right now. Pick a question or type your own.');$('#bq').focus()}}
+function explain(){say('me','Explain this page');say('bot',HELP[page][0]+'. '+HELP[page][1])}
+async function ask(t){t=(t||$('#bq').value).trim();if(!t)return;$('#bq').value='';say('me',t);const w=say('bot','Thinking...');const d=await api('assistant',{message:t});w.textContent=d?d.reply:'I could not answer that. Please try again.'}
+document.addEventListener('keydown',e=>{if(e.key==='?'&&S&&!e.target.matches('input,select,textarea'))botToggle()});
+const newOrder=e=>{e.preventDefault();act('orders',{product_id:$('#fp').value,qty:$('#fq').value,due_days:$('#fd').value,priority:$('#fr').value},()=>'Order created and scheduled.')};
+const logProg=e=>{e.preventDefault();if($('#ls').value)act('progress',{schedule_id:$('#ls').value,qty:$('#lq').value},()=>'Progress logged.')};
+function render(){
+  $('#login').hidden=!!S;$('#app').hidden=!S;if(!S)return;
+  const tabs=TABS[S.role];if(!tabs.includes(page))page='dashboard';
+  $('#who').textContent=S.user+' ('+S.role+')';$('#clk').textContent=tm(S.now);
+  $('#nav').innerHTML=tabs.map(t=>`<button class="${t===page?'on':''}" onclick="page='${t}';render()">${t[0].toUpperCase()+t.slice(1)}</button>`).join('');
+  if(!document.activeElement.matches('main input,main select')){$('#main').innerHTML=helpBox()+PAGES[page]();flt()}
+}
+load().then(()=>{if(!S)render()});
+</script>
+</body>
+</html>
